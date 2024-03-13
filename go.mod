@@ -7,7 +7,6 @@ toolchain go1.22.0
 require (
 	cloud.google.com/go/vertexai v0.6.0
 	github.com/caarlos0/env v3.5.0+incompatible
-	github.com/caarlos0/env/v10 v10.0.0
 	github.com/go-sql-driver/mysql v1.7.1
 )
 
@@ -45,5 +44,5 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240205150955-31a09d347014 // indirect
 	google.golang.org/grpc v1.61.0 // indirect
-	google.golang.org/protobuf v1.32.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 )
