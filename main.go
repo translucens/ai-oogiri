@@ -45,7 +45,7 @@ func main() {
 
 	aiClient, err := ai.NewClient(ctx, cfg.ProjectID)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("Failed to connect to AI API: %v", err)
 	}
 	defer aiClient.Close()
 
