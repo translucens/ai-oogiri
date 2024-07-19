@@ -12,11 +12,11 @@ import (
 )
 
 type Riddle struct {
-	ID         int
-	CreatedAt  time.Time
-	Theme      string
-	HotAnswer  string
-	ColdAnswer string
+	ID              int
+	CreatedAt       time.Time
+	Theme           string
+	PrimaryAnswer   string
+	SecondaryAnswer string
 }
 
 type Client struct {
@@ -67,12 +67,12 @@ func NewClient(ctx context.Context, username, password, host string, port int, s
 
 	db.Ping()
 
-	addStmt, err := db.PrepareContext(ctx, "INSERT INTO riddles (theme, hot_answer, cold_answer) VALUES (?, ?, ?)")
+	addStmt, err := db.PrepareContext(ctx, "INSERT INTO riddles (theme, primary_answer, secondary_answer) VALUES (?, ?, ?)")
 	if err != nil {
 		return nil, fmt.Errorf("PrepareContext(add): %v", err)
 	}
 
-	queryStmt, err := db.PrepareContext(ctx, "SELECT id, theme, hot_answer, cold_answer, created_at FROM riddles ORDER BY created_at DESC")
+	queryStmt, err := db.PrepareContext(ctx, "SELECT id, theme, primary_answer, secondary_answer, created_at FROM riddles ORDER BY created_at DESC")
 	if err != nil {
 		return nil, fmt.Errorf("PrepareContext(query): %v", err)
 	}
@@ -107,17 +107,17 @@ func (c *Client) GetHistory(ctx context.Context) ([]Riddle, error) {
 	defer rows.Close()
 
 	var id int
-	var theme, hotAnswer, ColdAnswer string
+	var theme, primaryAnswer, secondaryAnswer string
 	var timestamp time.Time
 
 	var conversations []Riddle
 
 	for rows.Next() {
-		if err := rows.Scan(&id, &theme, &hotAnswer, &ColdAnswer, &timestamp); err != nil {
+		if err := rows.Scan(&id, &theme, &primaryAnswer, &secondaryAnswer, &timestamp); err != nil {
 			return nil, err
 		}
 
-		conversations = append(conversations, Riddle{ID: id, CreatedAt: timestamp, Theme: theme, HotAnswer: hotAnswer, ColdAnswer: ColdAnswer})
+		conversations = append(conversations, Riddle{ID: id, CreatedAt: timestamp, Theme: theme, PrimaryAnswer: primaryAnswer, SecondaryAnswer: secondaryAnswer})
 	}
 
 	return conversations, nil

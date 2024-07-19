@@ -50,7 +50,7 @@ func (s *Server) rootHandler(w http.ResponseWriter, r *http.Request) {
 
 	history, err := s.dbClient.GetHistory(r.Context())
 	if err != nil {
-		slog.Error("failed to get history: %v", err)
+		slog.Error("failed to get history:", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
@@ -65,7 +65,7 @@ func (s *Server) newRequestHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if err := r.ParseForm(); err != nil {
-		slog.Warn("failed to parse form: %v", err)
+		slog.Warn("failed to parse form", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
@@ -81,14 +81,14 @@ func (s *Server) newRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	hotAns, coldAns, err := s.aiClient.Ask(ctx, theme)
 	if err != nil {
-		slog.Error("failed to ask: %v", err)
+		slog.Error("failed to ask:", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
 	if err := s.dbClient.AddRiddle(ctx, theme, hotAns, coldAns); err != nil {
-		slog.Error("failed to add riddle: %v", err)
+		slog.Error("failed to add riddle:", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return

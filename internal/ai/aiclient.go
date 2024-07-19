@@ -10,17 +10,18 @@ import (
 )
 
 type Client struct {
-	client    *genai.Client
-	hotModel  *genai.GenerativeModel
-	coldModel *genai.GenerativeModel
+	client         *genai.Client
+	primaryModel   *genai.GenerativeModel
+	secondaryModel *genai.GenerativeModel
 
 	template *template.Template
 }
 
 const region = "asia-northeast1"
-const model = "gemini-pro"
-const highTemp = 0.8
-const lowTemp = 0.2
+const primaryModel = "gemini-1.5-pro-001"
+const secondaryModel = "gemini-1.0-pro-002"
+const primaryTemp = 1.0
+const secondaryTemp = 1.0
 const templatePath = "template/prompt.txt"
 
 func NewClient(ctx context.Context, projectID string) (*Client, error) {
@@ -28,11 +29,11 @@ func NewClient(ctx context.Context, projectID string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	hotModel := client.GenerativeModel(model)
-	hotModel.SetTemperature(highTemp)
+	newModel := client.GenerativeModel(primaryModel)
+	newModel.SetTemperature(primaryTemp)
 
-	coldModel := client.GenerativeModel(model)
-	coldModel.SetTemperature(lowTemp)
+	oldModel := client.GenerativeModel(secondaryModel)
+	oldModel.SetTemperature(secondaryTemp)
 
 	t, err := template.ParseFiles(templatePath)
 	if err != nil {
@@ -40,23 +41,23 @@ func NewClient(ctx context.Context, projectID string) (*Client, error) {
 	}
 
 	return &Client{client: client,
-		hotModel: hotModel, coldModel: coldModel, template: t}, nil
+		primaryModel: newModel, secondaryModel: oldModel, template: t}, nil
 }
 
 // Ask returns hot and cold answers using theme from the LLM
 func (c *Client) Ask(ctx context.Context, theme string) (string, string, error) {
 
-	hotAns, err := c.requestLLM(ctx, c.hotModel, theme)
+	newAns, err := c.requestLLM(ctx, c.primaryModel, theme)
 	if err != nil {
 		return "", "", err
 	}
 
-	coldAns, err := c.requestLLM(ctx, c.coldModel, theme)
+	oldAns, err := c.requestLLM(ctx, c.secondaryModel, theme)
 	if err != nil {
 		return "", "", err
 	}
 
-	return hotAns, coldAns, nil
+	return newAns, oldAns, nil
 }
 
 func (c *Client) requestLLM(ctx context.Context, model *genai.GenerativeModel, theme string) (string, error) {
@@ -65,7 +66,7 @@ func (c *Client) requestLLM(ctx context.Context, model *genai.GenerativeModel, t
 
 	prompt := genai.Text(b.String())
 
-	resp, err := c.hotModel.GenerateContent(ctx, prompt)
+	resp, err := model.GenerateContent(ctx, prompt)
 	if err != nil {
 		return "", err
 	}
